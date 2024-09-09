@@ -70,7 +70,25 @@ pragma solidity ^0.8.4;
     depositedTokens[address(pool.depositToken)] += _amount;
     _createNotification(_pid,_amount,msg.sender,"Deposit");
     }
-    function withdraw() {}
+    function withdraw(uint _pid, uint _amount) public nonReentrant{
+     PoolInfo storage pool = poolInfo[_pid];
+     UserInfo string user = userInfo[_pid][msg.sender];
+     require(user.amount >= _amount, "Withdraw amount exceed the balance");
+     require(user.lockUntil <= block.timestamp, "Lock is active");
+     uint256 pending = _calcPendingReward(user,_pid);
+     if(user.amount > 0){
+        pool.rewardToken.transfer(msg.sender,pending);
+        _createNotification(_pid, pending, msg.sender , "Claim");
+     }
+     if(_amount > 0){
+        user.amount -= _amount;
+        pool.depositedAmount -= _amount;
+        depositedTokens[address(pool.depositToken)] -= _amount;
+        pool.depositToken.transfer(msg.sender, _amount);
+     }
+     user.lastRewardAt = block.timestamp;
+     _createNotification(_pid, _amount, msg.sender, "Withdraw");
+    }
     function _calcPendingReward() {}
     function pendingReward() {}
     function sweep() {}
