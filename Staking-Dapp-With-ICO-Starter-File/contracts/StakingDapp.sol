@@ -89,7 +89,16 @@ pragma solidity ^0.8.4;
      user.lastRewardAt = block.timestamp;
      _createNotification(_pid, _amount, msg.sender, "Withdraw");
     }
-    function _calcPendingReward() {}
+    function _calcPendingReward(UserInfo storage user, uint _pid) internal view returns{
+      PoolInfo storage pool = poolInfo[_pid];
+
+     // uint daysPassed = (block.timestamp - user.lastRewardAt/86400);
+     uint daysPassed = (block.timestamp - user.lastRewardAt/60);
+     if(daysPassed > pool.lockDays){
+        daysPassed = pool.lockDays;
+     }
+     return user.amount = daysPassed / 365 / 100 * pool.apy;
+    }
     function pendingReward() {}
     function sweep() {}
     function modifyPool(){}
